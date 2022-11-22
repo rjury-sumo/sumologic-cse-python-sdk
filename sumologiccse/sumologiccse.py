@@ -3,6 +3,16 @@ import requests
 import os
 import sys
 import http.cookiejar as cookielib
+import logging
+
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=LOGLEVEL,
+    datefmt='%Y-%m-%d %H:%M:%S')
+
+logger = logging.getLogger()
 
 class SumoLogicCSE(object):
     def __init__(self, accessId, accessKey, endpoint=None, caBundle=None, cookieFile='cookies.txt'):

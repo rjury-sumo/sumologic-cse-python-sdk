@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 class SumoLogicCSE(object):
-    def __init__(self, accessId, accessKey, endpoint=None, caBundle=None, cookieFile='cookies.txt'):
+    def __init__(self, accessId=os.environ.get('SUMO_ACCESS_ID'), accessKey=os.environ.get('SUMO_ACCESS_KEY'), endpoint=None, caBundle=None, cookieFile='cookies.txt'):
         self.session = requests.Session()
         self.session.auth = (accessId, accessKey)
         self.DEFAULT_VERSION = 'v1'

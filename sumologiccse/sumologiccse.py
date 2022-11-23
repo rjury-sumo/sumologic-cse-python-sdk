@@ -4,6 +4,7 @@ import os
 import sys
 import http.cookiejar as cookielib
 import logging
+import re
 
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 
@@ -26,10 +27,14 @@ class SumoLogicCSE(object):
         self.session.cookies = cj
         if endpoint is None:
             self.endpoint = self._get_endpoint()
+        elif re.match('au|fra|mum|us2|mon|dub|tky',endpoint):
+            self.endpoint = 'https://api.' + endpoint + '.sumologic.com/api/sec'
         else:
             self.endpoint = endpoint
         if self.endpoint[-1:] == "/":
             raise Exception("Endpoint should not end with a slash character")
+        logger.debug('endpoint: ' + str(self.endpoint))
+        logger.debug('accessid: ' + accessId[0:3] + '####' + accessId[12:-1])
 
     def _get_endpoint(self):
         """
@@ -37,7 +42,7 @@ class SumoLogicCSE(object):
         For example, If the client geolocation is Australia then the REST end point is
         https://api.au.sumologic.com/api/sec/v1
 
-        When the default REST endpoint (https://api.au.sumologic.com/api/sec/v1) is used the server
+        When the default REST endpoint (https://api.sumologic.com/api/sec/v1) is used the server
         responds with a 401 and causes the SumoLogic class instantiation to fail and this very
         unhelpful message is shown 'Full authentication is required to access this resource'
 
@@ -45,7 +50,7 @@ class SumoLogicCSE(object):
         the right endpoint
         """
 
-        self.endpoint = 'https://api.sumologic.com/api/sec/v1'
+        self.endpoint = 'https://api.sumologic.com/api/sec'
         self.response = self.session.get('https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
         endpoint = self.response.url.replace('/v1/insights/all', '')  # dirty hack to sanitise URI and retain domain
         print("SDK Endpoint", endpoint, file=sys.stderr)
@@ -116,10 +121,33 @@ class SumoLogicCSE(object):
         return r
 
     # Insights
-    def get_all_insights(self):
-        response = self.get('/insights/all')
-        return json.loads(response.text)['data']
+    # this is the raw call but can only returns up to 100 ['data']['objects']  and ['data']['nextPageToken']
+    def get_insights_all(self, q=None, nextPageToken=None):
+        params = {'q': q, 'nextPageToken': nextPageToken}
+        response = self.get('/insights/all',params)
+        return json.loads(response.text)
 
+    # this handles pagination past 100 results
+    # default max_pages will cap at 1000
+    def get_insights(self, q=None, max_pages=10):
+        insights=[]
+        pages = 0
+        nextPageToken=None
+        while pages < max_pages:
+            pages += 1
+            i = self.get_insights_all(q,nextPageToken)
+            if len(i['data']['objects']) > 0:
+                insights=  insights + i['data']['objects']
+            else:
+                logger.debug("no results")
+            
+            nextPageToken = i['data']['nextPageToken']
+
+            if nextPageToken == None:
+                logger.debug (str(len(insights)) + ' insights at last page: ' + str(pages))
+                break
+        return insights 
+    
     def get_insight(self, insight_id):
         response = self.get('/fields/%s' % insight_id)
         return json.loads(response.text)

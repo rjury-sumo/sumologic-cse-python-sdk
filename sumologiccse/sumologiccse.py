@@ -15,19 +15,25 @@ logging.basicConfig(
 
 logger = logging.getLogger()
 
+
 class SumoLogicCSE(object):
-    def __init__(self, accessId=os.environ.get('SUMO_ACCESS_ID'), accessKey=os.environ.get('SUMO_ACCESS_KEY'), endpoint=None, caBundle=None, cookieFile='cookies.txt'):
+    def __init__(self, accessId=os.environ.get('SUMO_ACCESS_ID'),
+                 accessKey=os.environ.get('SUMO_ACCESS_KEY'),
+                 endpoint=None,
+                 caBundle=None,
+                 cookieFile='cookies.txt'):
         self.session = requests.Session()
         self.session.auth = (accessId, accessKey)
         self.DEFAULT_VERSION = 'v1'
-        self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
+        self.session.headers = {
+            'content-type': 'application/json', 'accept': 'application/json'}
         if caBundle is not None:
             self.session.verify = caBundle
         cj = cookielib.FileCookieJar(cookieFile)
         self.session.cookies = cj
         if endpoint is None:
             self.endpoint = self._get_endpoint()
-        elif re.match('au|fra|mum|us2|mon|dub|tky',endpoint):
+        elif re.match('au|fra|mum|us2|mon|dub|tky', endpoint):
             self.endpoint = 'https://api.' + endpoint + '.sumologic.com/api/sec'
         else:
             self.endpoint = endpoint
@@ -51,13 +57,15 @@ class SumoLogicCSE(object):
         """
 
         self.endpoint = 'https://api.sumologic.com/api/sec'
-        self.response = self.session.get('https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
-        endpoint = self.response.url.replace('/v1/insights/all', '')  # dirty hack to sanitise URI and retain domain
+        self.response = self.session.get(
+            'https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
+        # dirty hack to sanitise URI and retain domain
+        endpoint = self.response.url.replace('/v1/insights/all', '')
         print("SDK Endpoint", endpoint, file=sys.stderr)
         return endpoint
 
     def get_versioned_endpoint(self, version):
-        return self.endpoint+'/%s' % version
+        return self.endpoint + '/%s' % version
 
     def delete(self, method, params=None, version=None):
         version = version or self.DEFAULT_VERSION
@@ -80,7 +88,8 @@ class SumoLogicCSE(object):
     def post(self, method, params, headers=None, version=None):
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
-        r = self.session.post(endpoint + method, data=json.dumps(params), headers=headers)
+        r = self.session.post(
+            endpoint + method, data=json.dumps(params), headers=headers)
         if 400 <= r.status_code < 600:
             r.reason = r.text
         r.raise_for_status()
@@ -105,7 +114,7 @@ class SumoLogicCSE(object):
         file_data = open(params['full_file_path'], 'rb').read()
         files = {'file': (params['file_name'], file_data)}
         r = requests.post(endpoint + method, files=files, params=post_params,
-                auth=(self.session.auth[0], self.session.auth[1]), headers=headers)
+                          auth=(self.session.auth[0], self.session.auth[1]), headers=headers)
         if 400 <= r.status_code < 600:
             r.reason = r.text
         r.raise_for_status()
@@ -114,7 +123,8 @@ class SumoLogicCSE(object):
     def put(self, method, params, headers=None, version=None):
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
-        r = self.session.put(endpoint + method, data=json.dumps(params), headers=headers)
+        r = self.session.put(
+            endpoint + method, data=json.dumps(params), headers=headers)
         if 400 <= r.status_code < 600:
             r.reason = r.text
         r.raise_for_status()
@@ -124,37 +134,41 @@ class SumoLogicCSE(object):
     # this is the raw call but can only returns up to 100 ['data']['objects']  and ['data']['nextPageToken']
     def get_insights_all(self, q=None, nextPageToken=None):
         params = {'q': q, 'nextPageToken': nextPageToken}
-        response = self.get('/insights/all',params)
+        response = self.get('/insights/all', params)
         return json.loads(response.text)
 
     # this handles pagination past 100 results
     # default max_pages will cap at 1000
     def get_insights(self, q=None, max_pages=10):
-        insights=[]
+        insights = []
         pages = 0
-        nextPageToken=None
+        nextPageToken = None
         while pages < max_pages:
             pages += 1
-            i = self.get_insights_all(q,nextPageToken)
+            i = self.get_insights_all(q, nextPageToken)
             if len(i['data']['objects']) > 0:
-                insights=  insights + i['data']['objects']
+                insights = insights + i['data']['objects']
             else:
                 logger.debug("no results")
-            
+
             nextPageToken = i['data']['nextPageToken']
 
             if nextPageToken == None:
-                logger.debug (str(len(insights)) + ' insights at last page: ' + str(pages))
+                logger.debug(str(len(insights))
+                             + ' insights at last page: ' + str(pages))
                 break
-        return insights 
-    
+        return insights
+
     def get_insight(self, insight_id):
-        response = self.get('/fields/%s' % insight_id)
+        response = self.get('/insights/%s' % insight_id)
         return json.loads(response.text)
 
-    def update_insight_status(self, insight_id):
-        response = self.put('/insight-status/%s' % insight_id)
+    def get_insight_statuses(self):
+        response = self.get('/insight-status')
         return json.loads(response.text)
 
-
- 
+    def update_insight_resolution_status(self, insight_id, resolution, status):
+        params = {'id': insight_id}
+        body = {'resolution': resolution, 'status': status}
+        response = self.put('/insights/%s/status' % insight_id)
+        return json.loads(response.text)

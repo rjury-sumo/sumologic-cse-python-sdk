@@ -11,9 +11,14 @@ logger.setLevel('INFO')
 from sumologiccse.sumologiccse import SumoLogicCSE
 cse=SumoLogicCSE(endpoint='us2')
 
-q = 'readableId:"INSIGHT-20190"'
-q = 'status:"new"'
+# examples of DSL - to get more try copying from urldecoded url in insights UI page
+#q = 'readableId:"INSIGHT-20190"'
+#q = 'status:"new"'
+# everything
 #q = None
+# status is not closed and created before date 
+q = '-status:"closed" created:>2022-11-17T00:00:00+00:00'
+
 insights = cse.get_insights(q=q)
 logger.info('query: + ' + str(q) + ' returned: ' + str(len(insights)) + ' insights.')
 
@@ -24,5 +29,11 @@ logger.info('query: + ' + str(q) + ' returned: ' + str(len(insights)) + ' insigh
 filtered_insights = list(filter(lambda d: d['confidence'] == None or d['confidence'] < .9, insights))
 
 for i in filtered_insights:
-   print ('id:' + i['readableId'] + ' confidence: ' + str(i['confidence']))
-   print(json.dumps(i))
+    row = {
+        'id': i['id'],
+        'readableId': i['readableId'],
+        'confidence': str(i['confidence']),
+        'created': i['created'],
+        'status': i['status']['name']
+        }
+    print(json.dumps(row))

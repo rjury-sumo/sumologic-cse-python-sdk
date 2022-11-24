@@ -168,7 +168,11 @@ class SumoLogicCSE(object):
         return json.loads(response.text)
 
     def update_insight_resolution_status(self, insight_id, resolution, status):
-        params = {'id': insight_id}
         body = {'resolution': resolution, 'status': status}
-        response = self.put('/insights/%s/status' % insight_id)
+        response = self.put('/insights/%s/status' % insight_id,body)
+        return json.loads(response.text)
+
+    def add_insight_comment(self, insight_id, comment):
+        body = {'body': comment}
+        response = self.post('/insights/%s/comments' % insight_id,body)
         return json.loads(response.text)

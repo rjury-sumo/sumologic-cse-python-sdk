@@ -1,0 +1,23 @@
+{
+    "data": [
+        {
+            "description": null,
+            "displayName": "New",
+            "id": "3",
+            "name": "new"
+        },
+        {
+            "description": null,
+            "displayName": "In Progress",
+            "id": "1",
+            "name": "inprogress"
+        },
+        {
+            "description": null,
+            "displayName": "Closed",
+            "id": "2",
+            "name": "closed"
+        }
+    ],
+    "errors": []
+}

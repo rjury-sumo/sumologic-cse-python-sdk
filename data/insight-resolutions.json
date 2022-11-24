@@ -1,0 +1,37 @@
+{
+    "data": {
+        "hasNextPage": false,
+        "objects": [
+            {
+                "description": "An insight triggered and it might not be an incident but is also not a false positive",
+                "id": 3,
+                "name": "No Action",
+                "parent": null,
+                "source": "sumo"
+            },
+            {
+                "description": "An incident occurred and was resolved",
+                "id": 1,
+                "name": "Resolved",
+                "parent": null,
+                "source": "sumo"
+            },
+            {
+                "description": "An insight triggered and it is legitimate activity",
+                "id": 2,
+                "name": "False Positive",
+                "parent": null,
+                "source": "sumo"
+            },
+            {
+                "description": "The insight has triggered before on the same entity and is a duplicate",
+                "id": 4,
+                "name": "Duplicate",
+                "parent": null,
+                "source": "sumo"
+            }
+        ],
+        "total": 4
+    },
+    "errors": []
+}

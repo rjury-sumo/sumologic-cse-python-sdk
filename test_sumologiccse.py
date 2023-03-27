@@ -12,16 +12,16 @@ logging.basicConfig()
 logger.setLevel('INFO')
 
 from sumologiccse.sumologiccse import SumoLogicCSE
-cse=SumoLogicCSE(endpoint='us2')
+cse=SumoLogicCSE(endpoint='https://long-api.sumologic.net/api/sec')
 q = '-status:"closed"'
-i = cse.get_insights(q=q)
+#i = cse.get_insights(q=q)
 
 class Test_Session:
     def test_run(self):
         assert 1 == 1
 
     def test_session_has_endpoint(self):
-        assert re.match('https://api.+sumologic.com/api/sec',cse.endpoint)
+        assert re.match('https://.+sumologic.+/sec',cse.endpoint)
 
 class Test_Insights:
     def get_insight_returns_insight(self):

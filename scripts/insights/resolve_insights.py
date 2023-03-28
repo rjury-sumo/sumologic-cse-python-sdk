@@ -11,7 +11,7 @@ from datetime import timedelta
 
 logger = logging.getLogger()
 logging.basicConfig()
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 parser=argparse.ArgumentParser(description="Changes the status and resolution state of a list of CSE insights using a search query, and adds a comment to each for audit. To avoid param error use: --query=\'-status:\"closed\"\'")
 parser.add_argument("--accessid", help="access id (default: SUMO_ACCESS_KEY)", default=os.environ.get('SUMO_ACCESS_ID'))
@@ -44,7 +44,7 @@ if args.comment == None:
 else:
     comment= args.comment
 
-insights = cse.get_insights(q=q)
+insights = cse.query_insights(q=q,limit=args.limit)
 if len(insights) > 0:
     filtered_insights = list(filter(lambda d: d['confidence'] == None or d['confidence'] <= args.confidence, insights))
     logger.info(f"query: {q} found: {len(insights)} insights. dryrun: {args.dryrun}")

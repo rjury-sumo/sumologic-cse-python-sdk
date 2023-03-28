@@ -158,6 +158,43 @@ class SumoLogicCSE(object):
                              + ' insights at last page: ' + str(pages))
                 break
         return insights
+    
+    def get_insights_list(self,q=None,offset=0,limit=10):
+        params = {'q': q, 'offset': offset, 'limit': limit}
+        response = self.get('/insights', params)
+        return json.loads(response.text)
+    
+    def query_insights(self, q=None,offset=0,limit=10):
+        insights = []
+        pages = 0
+        if limit > 20:
+            batchsize = 20
+        else: 
+            batchsize = limit
+
+        nextPageToken = None
+        remaining = limit
+        while remaining > 0:
+            i = self.get_insights_list(q, offset=pages,limit=batchsize)
+            logger.debug("batch:" + str(pages) + " remaining: " + str(remaining) + " batchsize:" + str(batchsize))
+            logger.debug("returned: " + str(len(i['data']['objects'])))
+            if len(i['data']['objects']) > 0:
+                insights = insights + i['data']['objects']
+                remaining = remaining - len(i['data']['objects'])
+            else:
+                logger.debug("no results")
+                remaining = 0
+
+            if i['data']['hasNextPage'] == False:
+                logger.debug(str(len(insights))
+                             + ' insights at last page: ' + str(len(i['data']['objects'])))
+                break
+            pages += 1
+            if remaining > 20:
+                batchsize = 20
+            else:
+                batchsize = remaining
+        return insights
 
     def get_insight(self, insight_id):
         response = self.get('/insights/%s' % insight_id)

@@ -139,7 +139,7 @@ class SumoLogicCSE(object):
 
     # this handles pagination past 100 results
     # default max_pages will cap at 1000
-    def get_insights(self, q=None, max_pages=10):
+    def get_insights(self, q=None, max_pages=5):
         insights = []
         pages = 0
         nextPageToken = None

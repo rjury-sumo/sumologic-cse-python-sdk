@@ -1,5 +1,7 @@
 # sumologic-cse-python-sdk
-https://api.sumologic.com/docs/sec/#
+An api client similar to the official Sumologic python API client but for the CSE api: https://api.sumologic.com/docs/sec/#
+
+This api has many endpoints this project only intends to cover off and provide useful scripts to solve some common use caes rather than support all of them.
 
 
 # install package
@@ -35,16 +37,20 @@ There are a lot of API endpoints you can also call them directly for example:
 statuses = cse.get('/insight-status')
 ```
 
+# Example Use Case Scripts
+You can find these in ./scripts
+
 ## Bulk Resolve Insights Script
-Use the provided script for example from root dir of project. This has a dryrun mode set this to False to make updates.
+For bulk closing insights using various criteria. This can be using the DSL (-q) or using client side filtering such as confidence score or a regex vs the json-ified payload. 
+
+This has a dryrun mode set this to False to make updates.
 The script will add a comment to each insight before changing it's status and resolution using the supplied params.
 
 Assuming you set env vars as per above for key and id:
 ```
-export PYTHONPATH="`pwd`"
 python ./scripts/insights/resolve_insights.py --endpoint 'us2' --dryrun True --limit 5 --query='-status:"closed"'
 ```
 
 # TODOs
 - Add a decent selection of endpoints
-- Write some unit and integration tests
+- Write some more unit and integration tests

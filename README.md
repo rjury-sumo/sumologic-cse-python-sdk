@@ -1,6 +1,12 @@
 # sumologic-cse-python-sdk
 https://api.sumologic.com/docs/sec/#
 
+
+# install package
+```
+pip install sumologiccse==0.0.1
+```
+
 # Getting Started
 see the scripts section for examples. In general either set env vars:
 - SUMO_ACCESS_ID

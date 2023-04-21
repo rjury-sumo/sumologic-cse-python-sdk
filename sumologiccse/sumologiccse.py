@@ -159,12 +159,12 @@ class SumoLogicCSE(object):
                 break
         return insights
     
-    def get_insights_list(self,q=None,offset=0,limit=10):
+    def get_insights_list(self,q=None,offset=0,limit=20):
         params = {'q': q, 'offset': offset, 'limit': limit}
         response = self.get('/insights', params)
         return json.loads(response.text)
     
-    def query_insights(self, q=None,offset=0,limit=10):
+    def query_insights(self, q=None,offset=0,limit=20):
         insights = []
         pages = 0
         if limit > 20:
@@ -189,7 +189,7 @@ class SumoLogicCSE(object):
                 logger.debug(str(len(insights))
                              + ' insights at last page: ' + str(len(i['data']['objects'])))
                 break
-            pages += 1
+            pages += batchsize
             if remaining > 20:
                 batchsize = 20
             else:

@@ -6,7 +6,7 @@ This api has many endpoints this project only intends to cover off and provide u
 
 # install package
 ```
-pip install sumologiccse==0.0.1
+pip install sumologiccse==0.0.2
 ```
 
 # Getting Started

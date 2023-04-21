@@ -49,11 +49,12 @@ comment= args.comment
 insights = cse.query_insights(q=q,limit=args.limit)
 if len(insights) > 0:
     filtered_insights = list(filter(lambda d: d['confidence'] == None or d['confidence'] <= args.confidence, insights))
+    sorted_insights = sorted(filtered_insights, key=lambda x: x['created'])
     logger.info(f"query: {q} found: {len(insights)} insights. dryrun: {args.dryrun}")
-
+    logger.info(f"after confidence filter: {len(sorted_insights)}")
     # set dryrun to False to do status update
     n=0
-    for i in insights:
+    for i in sorted_insights:
         n+=1
         if n <= args.limit:
             row = {

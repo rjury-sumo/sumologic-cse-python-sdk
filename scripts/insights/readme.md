@@ -51,7 +51,7 @@ The script will add a comment to each insight before changing it's status and re
 
 For example to close all open insights but only a max of 5 use:
 ```
-python resolve_insights.py --endpoint 'us2' --dryrun False --limit 5 --query='-status:"closed"'
+python resolve_insights.py --endpoint 'us2' --limit 5 --query='-status:"closed"'
 ```
 
 To close insights created over 70 days ago that are not closed.
@@ -65,11 +65,8 @@ INFO:root:Closing: INSIGHT-964 with resolution: False Positive
 ```
 
 ### dryrun
-The script has a safety feature a 'dyrun mode' and this is set to True by default.
+The script has a safety feature a 'dyrun mode' add ```--dryrun``` flag to the commandline to print out rather than close insights.
 In this mode the script will only display matching insights not update them.
-
-Set this to False to resolve selected insights.
-
 
 ### limit
 The script will only close a max number of insights in limit (50 by default). increase with --limit

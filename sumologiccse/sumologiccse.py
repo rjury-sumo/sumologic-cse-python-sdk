@@ -6,22 +6,33 @@ import http.cookiejar as cookielib
 import logging
 import re
 
+# Set up logging
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=LOGLEVEL,
     datefmt='%Y-%m-%d %H:%M:%S')
-
 logger = logging.getLogger()
 
-
 class SumoLogicCSE(object):
+    """
+    A class to interact with the Sumo Logic Cloud SIEM API.
+    """
+
     def __init__(self, accessId=os.environ.get('SUMO_ACCESS_ID'),
                  accessKey=os.environ.get('SUMO_ACCESS_KEY'),
                  endpoint=None,
                  caBundle=None,
                  cookieFile='cookies.txt'):
+        """
+        Initialize the SumoLogicCSE object.
+
+        :param accessId: Sumo Logic access ID
+        :param accessKey: Sumo Logic access key
+        :param endpoint: API endpoint
+        :param caBundle: CA bundle for SSL verification
+        :param cookieFile: File to store cookies
+        """
         self.session = requests.Session()
         self.session.auth = (accessId, accessKey)
         self.DEFAULT_VERSION = 'v1'
@@ -44,30 +55,35 @@ class SumoLogicCSE(object):
 
     def _get_endpoint(self):
         """
-        SumoLogic REST API endpoint changes based on the geo location of the client.
-        For example, If the client geolocation is Australia then the REST end point is
-        https://api.au.sumologic.com/api/sec/v1
+        Get the correct API endpoint based on the client's geo location.
 
-        When the default REST endpoint (https://api.sumologic.com/api/sec/v1) is used the server
-        responds with a 401 and causes the SumoLogic class instantiation to fail and this very
-        unhelpful message is shown 'Full authentication is required to access this resource'
-
-        This method makes a request to the default REST endpoint and resolves the 401 to learn
-        the right endpoint
+        :return: API endpoint
         """
-
         self.endpoint = 'https://api.sumologic.com/api/sec'
         self.response = self.session.get(
-            'https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
-        # dirty hack to sanitise URI and retain domain
+        logger.debug("SDK Endpoint: %s", endpoint)
         endpoint = self.response.url.replace('/v1/insights/all', '')
         print("SDK Endpoint", endpoint, file=sys.stderr)
         return endpoint
 
     def get_versioned_endpoint(self, version):
+        """
+        Get the versioned endpoint URL.
+
+        :param version: API version
+        :return: Versioned endpoint URL
+        """
         return self.endpoint + '/%s' % version
 
     def delete(self, method, params=None, version=None):
+        """
+        Send a DELETE request.
+
+        :param method: API method
+        :param params: Request parameters
+        :param version: API version
+        :return: Response object
+        """
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
         r = self.session.delete(endpoint + method, params=params)
@@ -77,6 +93,14 @@ class SumoLogicCSE(object):
         return r
 
     def get(self, method, params=None, version=None):
+        """
+        Send a GET request.
+
+        :param method: API method
+        :param params: Request parameters
+        :param version: API version
+        :return: Response object
+        """
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
         r = self.session.get(endpoint + method, params=params)
@@ -86,6 +110,15 @@ class SumoLogicCSE(object):
         return r
 
     def post(self, method, params, headers=None, version=None):
+        """
+        Send a POST request.
+
+        :param method: API method
+        :param params: Request parameters
+        :param headers: Request headers
+        :param version: API version
+        :return: Response object
+        """
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
         r = self.session.post(
@@ -97,16 +130,13 @@ class SumoLogicCSE(object):
 
     def post_file(self, method, params, headers=None, version=None):
         """
-        Handle file uploads via a separate post request to avoid having to clear
-        the content-type header in the session.
+        Handle file uploads via a separate POST request.
 
-        Requests (or urllib3) does not set a boundary in the header if the content-type
-        is already set to multipart/form-data.  Urllib will create a boundary but it
-        won't be specified in the content-type header, producing invalid POST request.
-
-        Multi-threaded applications using self.session may experience issues if we
-        try to clear the content-type from the session.  Thus we don't re-use the
-        session for the upload, rather we create a new one off session.
+        :param method: API method
+        :param params: Request parameters
+        :param headers: Request headers
+        :param version: API version
+        :return: Response object
         """
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
@@ -121,6 +151,15 @@ class SumoLogicCSE(object):
         return r
 
     def put(self, method, params, headers=None, version=None):
+        """
+        Send a PUT request.
+
+        :param method: API method
+        :param params: Request parameters
+        :param headers: Request headers
+        :param version: API version
+        :return: Response object
+        """
         version = version or self.DEFAULT_VERSION
         endpoint = self.get_versioned_endpoint(version)
         r = self.session.put(
@@ -130,16 +169,26 @@ class SumoLogicCSE(object):
         r.raise_for_status()
         return r
 
-    # Insights
-    # this is the raw call but can only returns up to 100 ['data']['objects']  and ['data']['nextPageToken']
     def get_insights_all(self, q=None, nextPageToken=None):
+        """
+        Retrieve all insights.
+
+        :param q: Query parameter
+        :param nextPageToken: Token for the next page
+        :return: JSON response
+        """
         params = {'q': q, 'nextPageToken': nextPageToken}
         response = self.get('/insights/all', params)
         return json.loads(response.text)
 
-    # this handles pagination past 100 results
-    # default max_pages will cap at 1000
     def get_insights(self, q=None, max_pages=5):
+        """
+        Retrieve insights with pagination.
+
+        :param q: Query parameter
+        :param max_pages: Maximum number of pages to retrieve
+        :return: List of insights
+        """
         insights = []
         pages = 0
         nextPageToken = None
@@ -158,24 +207,40 @@ class SumoLogicCSE(object):
                              + ' insights at last page: ' + str(pages))
                 break
         return insights
-    
-    def get_insights_list(self,q=None,offset=0,limit=20):
+
+    def get_insights_list(self, q=None, offset=0, limit=20):
+        """
+        Retrieve a list of insights with offset and limit.
+
+        :param q: Query parameter
+        :param offset: Offset for pagination
+        :param limit: Limit for pagination
+        :return: JSON response
+        """
         params = {'q': q, 'offset': offset, 'limit': limit}
         response = self.get('/insights', params)
         return json.loads(response.text)
-    
-    def query_insights(self, q=None,offset=0,limit=20):
+
+    def query_insights(self, q=None, offset=0, limit=20):
+        """
+        Query insights with pagination.
+
+        :param q: Query parameter
+        :param offset: Offset for pagination
+        :param limit: Limit for pagination
+        :return: List of insights
+        """
         insights = []
         pages = 0
         if limit > 20:
             batchsize = 20
-        else: 
+        else:
             batchsize = limit
 
         nextPageToken = None
         remaining = limit
         while remaining > 0:
-            i = self.get_insights_list(q, offset=pages,limit=batchsize)
+            i = self.get_insights_list(q, offset=pages, limit=batchsize)
             logger.debug("batch:" + str(pages) + " remaining: " + str(remaining) + " batchsize:" + str(batchsize))
             logger.debug("returned: " + str(len(i['data']['objects'])))
             if len(i['data']['objects']) > 0:
@@ -197,19 +262,45 @@ class SumoLogicCSE(object):
         return insights
 
     def get_insight(self, insight_id):
+        """
+        Retrieve a specific insight by ID.
+
+        :param insight_id: Insight ID
+        :return: JSON response
+        """
         response = self.get('/insights/%s' % insight_id)
         return json.loads(response.text)
 
     def get_insight_statuses(self):
+        """
+        Retrieve all insight statuses.
+
+        :return: JSON response
+        """
         response = self.get('/insight-status')
         return json.loads(response.text)
 
     def update_insight_resolution_status(self, insight_id, resolution, status):
+        """
+        Update the resolution status of an insight.
+
+        :param insight_id: Insight ID
+        :param resolution: Resolution status
+        :param status: Status
+        :return: JSON response
+        """
         body = {'resolution': resolution, 'status': status}
-        response = self.put('/insights/%s/status' % insight_id,body)
+        response = self.put('/insights/%s/status' % insight_id, body)
         return json.loads(response.text)
 
     def add_insight_comment(self, insight_id, comment):
+        """
+        Add a comment to an insight.
+
+        :param insight_id: Insight ID
+        :param comment: Comment text
+        :return: JSON response
+        """
         body = {'body': comment}
-        response = self.post('/insights/%s/comments' % insight_id,body)
+        response = self.post('/insights/%s/comments' % insight_id, body)
         return json.loads(response.text)

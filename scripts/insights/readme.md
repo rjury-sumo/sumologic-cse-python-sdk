@@ -22,6 +22,11 @@ For the origional prod/us1 instance use the long form api name
 —-endpoint ‘https://api.sumologic.com/api/sec'
 ```
 
+You can also use complete name e.g for fed:
+```
+--endpoint https://api.fed.sumologic.com/api/sec
+```
+
 For endpoints other than prod/us1 use the endpoint short form name such as:
 ```
 --endpoint 'us2'
@@ -49,12 +54,12 @@ For bulk closing insights using various criteria.
 This can be using the DSL (-query) or using client side filtering such as confidence score or a regex vs the json-ified payload.
 The script will add a comment to each insight before changing it's status and resolution using the supplied params.
 
-For example to close all open insights but only a max of 5 use:
+### Example 1: close all open insights but only a max of 5 use:
 ```
 python resolve_insights.py --endpoint 'us2' --limit 5 --query='-status:"closed"'
 ```
 
-To close insights created over 70 days ago that are not closed.
+### Example 2: close insights created over 70 days ago that are not closed.
 For testing here limit 1 is set to only close one insight.
 ```
 python3 resolve_insights.py --endpoint 'https://api.sumologic.com/api/sec' --daysold 70  --limit 1 --query='-status:"closed"' 
@@ -62,6 +67,11 @@ INFO:root:query: -status:"closed" created:<2023-05-23T22:03:43+00:00 found: 1 in
 INFO:root:after confidence filter: 1
 INFO:root:{"id": "0459d19d-766e-3c52-872d-51a93fe9fd69", "readableId": "INSIGHT-964", "confidence": "0.15", "created": "2023-05-23T21:03:45.356623", "status": "new"}
 INFO:root:Closing: INSIGHT-964 with resolution: False Positive
+```
+
+### Example 3: a more complex dsl query with escaped " on windows
+```
+"C:\Program Files\Python310\python.exe" C:\Temp\resolve-insights.py --endpoint https://api.fed.sumologic.com/api/sec --accessid SUMO_ACCESS_ID --accesskey SUMO_ACCESS_KEY --daysold 0 --query="srcDevice_ip_asnOrg = \"Some Vendor\.\" -status:\"closed\"" --dryrun --status closed --resolution "Tuned" --comment "Some vendor tuned with ASN on matchlist. Closing with API"
 ```
 
 ### dryrun

@@ -22,7 +22,9 @@ parser.add_argument("--limit", help="Max insights to close (default 50)", defaul
 args=parser.parse_args()
 
 from sumologiccse.sumologiccse import SumoLogicCSE
-cse=SumoLogicCSE(endpoint=args.endpoint)
+cse=SumoLogicCSE(endpoint=args.endpoint, 
+                 accessId=args.accessid, 
+                 accessKey=args.accesskey)
 
 # examples of DSL - to get more try copying from urldecoded url in insights UI page
 #q = 'readableId:"INSIGHT-20190"'

@@ -33,7 +33,9 @@ args=parser.parse_args()
 logger.debug(f"Dict format: {vars(args)}")
 
 from sumologiccse.sumologiccse import SumoLogicCSE
-cse=SumoLogicCSE(endpoint=args.endpoint)
+cse=SumoLogicCSE(endpoint=args.endpoint, 
+                 accessId=args.accessid, 
+                 accessKey=args.accesskey)
 
 # get relative datetime
 timenow=datetime.now

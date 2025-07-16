@@ -52,6 +52,19 @@ statuses = cse.get('/insight-status')
 You can find these in ./scripts
 - [Insights scripts readme](scripts/insights/readme.md)
 
+# Docker
+
+Build the dockerfile, you can then run build version of module for testing or build with package included by uncommenting the pypi package install
+
+```
+docker build -t sumocse-test .
+```
+
+Run and set relevant env vars e.g 
+```
+docker run -it -e SUMO_ACCESS_ID="$SUMO_ACCESS_ID_DEMO" -e SUMO_ACCESS_KEY="$SUMO_ACCESS_KEY_DEMO" -e SUMO_ACCESS_ID_DEMO="$SUMO_ACCESS_ID_DEMO" -e SUMO_ACCESS_KEY_DEMO="$SUMO_ACCESS_KEY_DEMO" sumocse-test bash
+```
+
 # TODOs
 - Add a decent selection of endpoints
 - Write some more unit and integration tests

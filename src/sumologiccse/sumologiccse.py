@@ -61,6 +61,7 @@ class SumoLogicCSE(object):
         """
         self.endpoint = 'https://api.sumologic.com/api/sec'
         self.response = self.session.get(
+                'https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
         logger.debug("SDK Endpoint: %s", endpoint)
         endpoint = self.response.url.replace('/v1/insights/all', '')
         print("SDK Endpoint", endpoint, file=sys.stderr)

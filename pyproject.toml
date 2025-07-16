@@ -12,7 +12,7 @@ description = "An API client for common use cases for the Sumologic Cloud SIEM A
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
-    "Programming Language :: Python :: >3",
+    "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 

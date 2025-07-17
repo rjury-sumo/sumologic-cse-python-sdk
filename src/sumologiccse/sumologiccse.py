@@ -21,15 +21,15 @@ class SumoLogicCSE(object):
 
     def __init__(self, accessId=os.environ.get('SUMO_ACCESS_ID'),
                  accessKey=os.environ.get('SUMO_ACCESS_KEY'),
-                 endpoint=None,
+                 endpoint='https://api.sumologic.com/api/sec',
                  caBundle=None,
                  cookieFile='cookies.txt'):
         """
         Initialize the SumoLogicCSE object.
 
-        :param accessId: Sumo Logic access ID
-        :param accessKey: Sumo Logic access key
-        :param endpoint: API endpoint
+        :param accessId: Sumo Logic access ID.  Defaults to environment var SUMO_ACCESS_ID.
+        :param accessKey: Sumo Logic access key. Defaults to environment var SUMO_ACCESS_KEY.
+        :param endpoint: API endpoint. Defaults to 'https://api.sumologic.com/api/sec'.
         :param caBundle: CA bundle for SSL verification
         :param cookieFile: File to store cookies
         """
@@ -42,30 +42,19 @@ class SumoLogicCSE(object):
             self.session.verify = caBundle
         cj = cookielib.FileCookieJar(cookieFile)
         self.session.cookies = cj
+
         if endpoint is None:
-            self.endpoint = self._get_endpoint()
+            self.endpoint = 'https://api.sumologic.com/api/sec'
         elif re.match('au|fra|mum|us2|mon|dub|tky', endpoint):
             self.endpoint = 'https://api.' + endpoint + '.sumologic.com/api/sec'
+        elif re.match('prod|us1', endpoint):
+            self.endpoint = 'https://api.sumologic.com/api/sec'
         else:
             self.endpoint = endpoint
         if self.endpoint[-1:] == "/":
             raise Exception("Endpoint should not end with a slash character")
         logger.debug('endpoint: ' + str(self.endpoint))
         logger.debug('accessid: ' + accessId[0:3] + '####' + accessId[12:-1])
-
-    def _get_endpoint(self):
-        """
-        Get the correct API endpoint based on the client's geo location.
-
-        :return: API endpoint
-        """
-        self.endpoint = 'https://api.sumologic.com/api/sec'
-        self.response = self.session.get(
-                'https://api.sumologic.com/api/sec/v1/insights/all')  # Dummy call to get endpoint
-        logger.debug("SDK Endpoint: %s", endpoint)
-        endpoint = self.response.url.replace('/v1/insights/all', '')
-        print("SDK Endpoint", endpoint, file=sys.stderr)
-        return endpoint
 
     def get_versioned_endpoint(self, version):
         """

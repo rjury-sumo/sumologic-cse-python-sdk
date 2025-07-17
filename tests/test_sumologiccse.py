@@ -12,28 +12,34 @@ logger = logging.getLogger()
 logging.basicConfig()
 logger.setLevel('INFO')
 
+cse=SumoLogicCSE(accessId=os.getenv('SUMO_ACCESS_ID_DEMO'), 
+                accessKey=os.getenv('SUMO_ACCESS_KEY_DEMO'))
+
 from sumologiccse.sumologiccse import SumoLogicCSE
-# cse=SumoLogicCSE(endpoint='https://long-api.sumologic.net/api/sec', 
-#                  accessId=os.getenv('SAI_CONTENTLONG'), 
-#                  accessKey=os.getenv('SAK_CONTENTLONG'))
-#cse=SumoLogicCSE(endpoint='https://api.au.sumologic.com/api/sec')
-cse=SumoLogicCSE(endpoint='https://api.sumologic.com/api/sec', 
-                 accessId=os.getenv('SUMO_ACCESS_ID_DEMO'), 
-                 accessKey=os.getenv('SUMO_ACCESS_KEY_DEMO'))
-
-q = '-status:"closed"'
-#i = cse.get_insights(q=q)
-i = cse.get_insights_list(q=q,limit=1)
-
-class Test_Session:
+class Test_Default_Session:
     def test_run(self):
         assert 1 == 1
 
-    def test_session_has_endpoint(self):
-        assert re.match('https://.+sumologic.+/sec',cse.endpoint)
+    def test_session_default_endpoint(self):
+        assert 'https://api.sumologic.com/api/sec',SumoLogicCSE().endpoint
+
+    def test_session_au_endpoint(self):
+        assert 'https://api.au.sumologic.com/api/sec',SumoLogicCSE(endpoint='au').endpoint
+
+    def test_session_us2_endpoint(self):
+        assert 'https://api.us2.sumologic.com/api/sec',SumoLogicCSE(endpoint='us2').endpoint
+
+    def test_session_prod_endpoint(self):
+        assert 'https://api.sumologic.com/api/sec',SumoLogicCSE(endpoint='prod').endpoint
+
+    def test_session_us1_endpoint(self):
+        assert 'https://api.sumologic.com/api/sec',SumoLogicCSE(endpoint='us1').endpoint
+    
 
 class Test_Insights:
     def get_insight_returns_insight(self):
+        q = '-status:"closed"'
+        insights = cse.get_insights(q=q)
         logger.info(f"get_insight:{i[0]['readableId']}")
         assert re.match('INSIGHT-[0-9]+',cse.get_insight(i[0]['id'])[0]['readableId'])
 
@@ -43,6 +49,7 @@ class Test_Insights:
         assert len(insights)>0 and re.match('INSIGHT-[0-9]+',insights[0]['readableId'])
     
     def test_get_insights_list_returns_list(self):
+        q = '-status:"closed"'
         insights = cse.get_insights_list(q=q)
         assert len(insights['data']['objects']) > 0 and re.match('INSIGHT-[0-9]+',insights['data']['objects'][0]['readableId'])
 

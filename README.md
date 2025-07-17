@@ -18,10 +18,8 @@ or you must privide as arguments.
 ## endpoints 
 See: https://help.sumologic.com/docs/api/getting-started/#which-endpoint-should-i-should-use
 
-For the origional prod/us1 instance use the long form api name
-```
-—-endpoint ‘https://api.sumologic.com/api/sec'
-```
+The defeault endpoint is: https://api.sumologic.com/docs/sec
+Using --endpoint 'prod' or 'us1' will also resolve to this value.
 
 For endpoints other than prod/us1 use the endpoint short form name such as:
 ```

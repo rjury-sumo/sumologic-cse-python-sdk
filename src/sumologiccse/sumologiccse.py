@@ -294,3 +294,61 @@ class SumoLogicCSE(object):
         body = {'body': comment}
         response = self.post('/insights/%s/comments' % insight_id, body)
         return json.loads(response.text)
+
+    def get_rules(self, q=None, offset=0, limit=20):
+        """
+        Retrieve rules with optional query and pagination.
+        
+        :param q: Query parameter for filtering rules
+        :param offset: Offset for pagination  
+        :param limit: Limit for pagination (max 100)
+        :return: JSON response
+        """
+        params = {'q': q, 'offset': offset, 'limit': limit}
+        response = self.get('/rules', params)
+        return json.loads(response.text)
+
+    def get_rule(self, rule_id):
+        """
+        Retrieve a specific rule by ID.
+        
+        :param rule_id: Rule ID
+        :return: JSON response
+        """
+        response = self.get('/rules/%s' % rule_id)
+        return json.loads(response.text)
+
+    def query_rules(self, q=None, offset=0, limit=20):
+        """
+        Query rules with pagination handling.
+        
+        :param q: Query parameter for filtering rules
+        :param offset: Offset for pagination
+        :param limit: Limit for pagination
+        :return: List of rules
+        """
+        rules = []
+        pages = 0
+        batchsize = min(limit, 20) if limit > 20 else limit
+        
+        remaining = limit
+        while remaining > 0:
+            r = self.get_rules(q, offset=pages, limit=batchsize)
+            logger.debug(f"batch:{pages} remaining:{remaining} batchsize:{batchsize}")
+            logger.debug(f"returned: {len(r['data']['objects'])}")
+            
+            if len(r['data']['objects']) > 0:
+                rules.extend(r['data']['objects'])
+                remaining -= len(r['data']['objects'])
+            else:
+                logger.debug("no results")
+                remaining = 0
+                
+            if not r['data']['hasNextPage']:
+                logger.debug(f"{len(rules)} rules at last page")
+                break
+                
+            pages += batchsize
+            batchsize = min(20, remaining)
+            
+        return rules

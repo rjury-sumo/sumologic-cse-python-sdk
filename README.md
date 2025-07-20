@@ -47,8 +47,9 @@ statuses = cse.get('/insight-status')
 ```
 
 # Example Use Case Scripts
-You can find these in ./scripts
+You can find these in ./scripts for example:
 - [Insights scripts readme](scripts/insights/readme.md)
+
 
 # Docker
 

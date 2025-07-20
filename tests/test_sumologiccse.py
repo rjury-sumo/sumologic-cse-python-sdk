@@ -57,87 +57,54 @@ class Test_Insights:
         insights = cse.query_insights(q=None,offset=0,limit=1)
         assert len(insights) == 1
 
-    # def test_query_insights_returns_ten_items(self):
-    #     insights = cse.query_insights(q=None,offset=0,limit=10)
-    #     assert len(insights) == 10
+class TestRulesIntegration(unittest.TestCase):
+    """Integration tests for rules API methods - requires valid credentials."""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test client with real credentials."""
+        cls.access_id = os.getenv('SUMO_ACCESS_ID')
+        cls.access_key = os.getenv('SUMO_ACCESS_KEY')
+        cls.endpoint =  'au'
+        
+        if not cls.access_id or not cls.access_key:
+            raise unittest.SkipTest("Integration tests require SUMO_ACCESS_ID_DEMO and SUMO_ACCESS_KEY_DEMO environment variables")
+        
+        cls.cse = SumoLogicCSE(
+            accessId=cls.access_id,
+            accessKey=cls.access_key,
+            endpoint=cls.endpoint
+        )
+    
+    def setUp(self):
+        """Add delay between tests to avoid rate limiting."""
+        time.sleep(0.5)
 
-    # def test_query_insights_returns_100_items(self):
-    #     insights = cse.query_insights(q=None,offset=0,limit=100)
-    #     assert len(insights) == 100
+    def test_get_rules_basic(self):
+        """Test basic get_rules functionality."""
+        response = self.cse.get_rules(limit=5)
+        
+        # Validate response structure
+        self.assertIn('data', response)
+        self.assertIn('objects', response['data'])
+        self.assertIn('hasNextPage', response['data'])
+        self.assertIsInstance(response['data']['objects'], list)
+        
+        # Validate rule objects if any exist
+        if response['data']['objects']:
+            rule = response['data']['objects'][0]
+            self.assertIn('id', rule)
+            self.assertIn('name', rule)
+            self.assertTrue(rule['id'])  # ID should not be empty
 
-# class TestSumoLogicCSE(unittest.TestCase):
+    def test_get_rules_with_query(self):
+        """Test get_rules with query filter."""
+        response = self.cse.get_rules(q='enabled:true', limit=3)
+        
+        self.assertIn('data', response)
+        self.assertIsInstance(response['data']['objects'], list)
+        
+        # All returned rules should match the query criteria
+        for rule in response['data']['objects']:
+            self.assertIn('enabled', rule)
 
-#     @patch('sumologiccse.sumologiccse.requests.Session')
-#     def setUp(self, MockSession):
-#         self.mock_session = MockSession.return_value
-#         self.mock_session.get.return_value = MagicMock(status_code=200, url='https://api.test.sumologic.com/api/sec')
-#         self.sumo = SumoLogicCSE(accessId='test_id', accessKey='test_key', endpoint='test')
-
-#     def test_get_versioned_endpoint(self):
-#         version = 'v2'
-#         expected_endpoint = 'https://api.test.sumologic.com/api/sec/v2'
-#         self.assertEqual(self.sumo.get_versioned_endpoint(version), expected_endpoint)
-
-#     def test_delete(self):
-#         self.mock_session.delete.return_value = MagicMock(status_code=200)
-#         response = self.sumo.delete('/test')
-#         self.assertEqual(response.status_code, 200)
-
-#     def test_get(self):
-#         self.mock_session.get.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.get('/test')
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.json(), {"key": "value"})
-
-#     def test_post(self):
-#         self.mock_session.post.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.post('/test', params={"param": "value"})
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.json(), {"key": "value"})
-
-#     def test_post_file(self):
-#         with patch('builtins.open', unittest.mock.mock_open(read_data=b'data')) as mock_file:
-#             with patch('sumologiccse.sumologiccse.requests.post') as mock_post:
-#                 mock_post.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#                 response = self.sumo.post_file('/test', params={"full_file_path": "path", "file_name": "file", "merge": True})
-#                 self.assertEqual(response.status_code, 200)
-#                 self.assertEqual(response.json(), {"key": "value"})
-
-#     def test_put(self):
-#         self.mock_session.put.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.put('/test', params={"param": "value"})
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.json(), {"key": "value"})
-
-#     def test_get_insights_all(self):
-#         self.mock_session.get.return_value = MagicMock(status_code=200, text='{"data": {"objects": [], "nextPageToken": null}}')
-#         response = self.sumo.get_insights_all()
-#         self.assertEqual(response, {"data": {"objects": [], "nextPageToken": None}})
-
-#     def test_get_insights(self):
-#         self.mock_session.get.return_value = MagicMock(status_code=200, text='{"data": {"objects": [], "nextPageToken": null}}')
-#         response = self.sumo.get_insights()
-#         self.assertEqual(response, [])
-
-#     def test_get_insight(self):
-#         self.mock_session.get.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.get_insight('test_id')
-#         self.assertEqual(response, {"key": "value"})
-
-#     def test_get_insight_statuses(self):
-#         self.mock_session.get.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.get_insight_statuses()
-#         self.assertEqual(response, {"key": "value"})
-
-#     def test_update_insight_resolution_status(self):
-#         self.mock_session.put.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.update_insight_resolution_status('test_id', 'resolved', 'closed')
-#         self.assertEqual(response, {"key": "value"})
-
-#     def test_add_insight_comment(self):
-#         self.mock_session.post.return_value = MagicMock(status_code=200, text='{"key": "value"}')
-#         response = self.sumo.add_insight_comment('test_id', 'test comment')
-#         self.assertEqual(response, {"key": "value"})
-
-# if __name__ == '__main__':
-#     unittest.main()

@@ -1,6 +1,6 @@
 [project]
 name = "sumologiccse"
-version = "0.0.5"
+version = "0.0.6"
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
 

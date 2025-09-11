@@ -47,7 +47,9 @@ try:
     logger.info(f"Successfully connected to endpoint: {args.endpoint}")
 except AuthenticationError as e:
     logger.error(f"Authentication failed: {e}")
-    logger.error("Please check your SUMO_ACCESS_ID and SUMO_ACCESS_KEY environment variables")
+    logger.error(
+        "Please check your SUMO_ACCESS_ID and SUMO_ACCESS_KEY environment variables"
+    )
     logger.error("Or provide --accessid and --accesskey arguments")
     exit(1)
 except ConfigurationError as e:
@@ -74,11 +76,13 @@ except AuthenticationError as e:
     logger.error("Possible causes:")
     logger.error("1. Credentials may have expired")
     logger.error("2. Account may not have Cloud SIEM access")
-    logger.error("3. Wrong endpoint - try different endpoint (--endpoint prod/us1/us2/au/etc)")
+    logger.error(
+        "3. Wrong endpoint - try different endpoint (--endpoint prod/us1/us2/au/etc)"
+    )
     exit(1)
 except APIError as e:
     logger.error(f"API request failed: {e}")
-    if hasattr(e, 'status_code'):
+    if hasattr(e, "status_code"):
         logger.error(f"HTTP Status Code: {e.status_code}")
     exit(1)
 except Exception as e:

@@ -10,11 +10,13 @@ import requests
 
 class SumoLogicCSEError(Exception):
     """Base exception for SumoLogic CSE API errors."""
+
     pass
 
 
 class AuthenticationError(SumoLogicCSEError):
     """Raised when authentication fails."""
+
     pass
 
 
@@ -25,7 +27,7 @@ class APIError(SumoLogicCSEError):
         self,
         message: str,
         status_code: Optional[int] = None,
-        response_text: Optional[str] = None
+        response_text: Optional[str] = None,
     ):
         super().__init__(message)
         self.status_code = status_code
@@ -34,11 +36,13 @@ class APIError(SumoLogicCSEError):
 
 class ConfigurationError(SumoLogicCSEError):
     """Raised when there's a configuration error."""
+
     pass
 
 
 class DataError(SumoLogicCSEError):
     """Raised when there's an issue with data parsing or validation."""
+
     pass
 
 
@@ -150,7 +154,9 @@ class SumoLogicCSE:
         """
         return self.endpoint + f"/{version}"
 
-    def _handle_response(self, response: requests.Response, method: str) -> requests.Response:
+    def _handle_response(
+        self, response: requests.Response, method: str
+    ) -> requests.Response:
         """
         Handle HTTP response with proper error handling and logging.
 
@@ -162,14 +168,22 @@ class SumoLogicCSE:
         """
         try:
             # Log the request details
-            logger.debug(f"{response.request.method} {response.url} -> {response.status_code}")
+            logger.debug(
+                f"{response.request.method} {response.url} -> {response.status_code}"
+            )
 
             if response.status_code == 401:
                 logger.error("Authentication failed - check credentials")
-                raise AuthenticationError("Authentication failed. Check your access ID and key.")
+                raise AuthenticationError(
+                    "Authentication failed. Check your access ID and key."
+                )
             elif response.status_code == 403:
                 logger.error("Access denied - insufficient permissions")
-                raise APIError("Access denied. Check your permissions.", response.status_code, response.text)
+                raise APIError(
+                    "Access denied. Check your permissions.",
+                    response.status_code,
+                    response.text,
+                )
             elif 400 <= response.status_code < 600:
                 error_msg = f"API request failed: {method}"
                 try:
@@ -181,7 +195,11 @@ class SumoLogicCSE:
                         error_msg = f"API error: {error_data['error']}"
                 except (ValueError, json.JSONDecodeError):
                     # Fall back to response text if JSON parsing fails
-                    error_msg = f"API error: {response.text[:200]}" if response.text else error_msg
+                    error_msg = (
+                        f"API error: {response.text[:200]}"
+                        if response.text
+                        else error_msg
+                    )
 
                 logger.error(f"HTTP {response.status_code}: {error_msg}")
                 raise APIError(error_msg, response.status_code, response.text)
@@ -254,14 +272,16 @@ class SumoLogicCSE:
                 endpoint + method, data=json.dumps(params), headers=headers
             )
             return self._handle_response(r, f"POST {method}")
-        except (json.JSONEncodeError, TypeError) as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"JSON encoding failed for POST {method}: {e}")
             raise DataError(f"Invalid JSON data: {e}") from e
         except requests.exceptions.RequestException as e:
             logger.error(f"POST request failed for {method}: {e}")
             raise APIError(f"POST request failed: {e}") from e
 
-    def _safe_json_parse(self, response: requests.Response, context: str = "") -> dict[str, Any]:
+    def _safe_json_parse(
+        self, response: requests.Response, context: str = ""
+    ) -> dict[str, Any]:
         """
         Safely parse JSON response with proper error handling.
 
@@ -302,7 +322,9 @@ class SumoLogicCSE:
         try:
             # Validate required parameters
             if "full_file_path" not in params or "file_name" not in params:
-                raise DataError("Missing required parameters: full_file_path and file_name")
+                raise DataError(
+                    "Missing required parameters: full_file_path and file_name"
+                )
 
             post_params = {"merge": params.get("merge", False)}
 
@@ -310,7 +332,9 @@ class SumoLogicCSE:
             try:
                 with open(params["full_file_path"], "rb") as f:
                     file_data = f.read()
-                logger.debug(f"Read {len(file_data)} bytes from {params['full_file_path']}")
+                logger.debug(
+                    f"Read {len(file_data)} bytes from {params['full_file_path']}"
+                )
             except OSError as e:
                 logger.error(f"Failed to read file {params['full_file_path']}: {e}")
                 raise DataError(f"Cannot read file: {e}") from e
@@ -351,7 +375,7 @@ class SumoLogicCSE:
                 endpoint + method, data=json.dumps(params), headers=headers
             )
             return self._handle_response(r, f"PUT {method}")
-        except (json.JSONEncodeError, TypeError) as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"JSON encoding failed for PUT {method}: {e}")
             raise DataError(f"Invalid JSON data: {e}") from e
         except requests.exceptions.RequestException as e:
@@ -466,7 +490,6 @@ class SumoLogicCSE:
         """
         response = self.get(f"/insights/{insight_id}")
         return json.loads(response.text)
-
 
     def update_insight_resolution_status(self, insight_id, resolution, status):
         """
@@ -1017,11 +1040,7 @@ class SumoLogicCSE:
         :raises APIError: If the API request fails
         :raises DataError: If response parsing fails
         """
-        params = {
-            "startTime": start_time,
-            "endTime": end_time,
-            "timezone": timezone
-        }
+        params = {"startTime": start_time, "endTime": end_time, "timezone": timezone}
 
         logger.info(f"Fetching insight counts from {start_time} to {end_time}")
         response = self.get("/insight-counts", params)
@@ -1038,11 +1057,7 @@ class SumoLogicCSE:
         :raises APIError: If the API request fails
         :raises DataError: If response parsing fails
         """
-        params = {
-            "startTime": start_time,
-            "endTime": end_time,
-            "timezone": timezone
-        }
+        params = {"startTime": start_time, "endTime": end_time, "timezone": timezone}
 
         logger.info(f"Fetching signal counts from {start_time} to {end_time}")
         response = self.get("/signal-counts", params)
@@ -1059,11 +1074,7 @@ class SumoLogicCSE:
         :raises APIError: If the API request fails
         :raises DataError: If response parsing fails
         """
-        params = {
-            "startTime": start_time,
-            "endTime": end_time,
-            "timezone": timezone
-        }
+        params = {"startTime": start_time, "endTime": end_time, "timezone": timezone}
 
         logger.info(f"Fetching record counts from {start_time} to {end_time}")
         response = self.get("/record-counts", params)
@@ -1250,7 +1261,9 @@ class SumoLogicCSE:
         response = self.get(f"/threat-intel-sources/{source_id}")
         return self._safe_json_parse(response, "get_threat_intel_source")
 
-    def get_threat_intel_indicators(self, source_id: str, limit: int = 100, token: str = None):
+    def get_threat_intel_indicators(
+        self, source_id: str, limit: int = 100, token: str = None
+    ):
         """
         Get threat intelligence indicators for a specific source.
 

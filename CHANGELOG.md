@@ -1,6 +1,20 @@
 # CHANGELOG for sumologic-cse-python-sdk
 This project adheres to [Semantic Versioning](http://semver.org/). The CHANGELOG follows the format listed at [Keep A Changelog](http://keepachangelog.com/)
 
+## [0.2.1] - 2025-01-12
+
+### 🐛 Bug Fixes
+
+**Critical Exception Handling Fix**
+- **Fixed JSON Exception Handling**: Corrected invalid `json.JSONEncodeError` references in POST and PUT method exception handling
+  - Changed to proper `TypeError` and `ValueError` exceptions for JSON encoding operations
+  - Resolves runtime `AttributeError: module 'json' has no attribute 'JSONEncodeError'` crashes
+  - Affects `update_insight_resolution_status()` and other methods that modify data via API calls
+
+**Impact**: This fix prevents script crashes when API operations encounter encoding errors, particularly in automation scripts like `resolve_insights.py`.
+
+**Root Cause**: `json.JSONEncodeError` doesn't exist in Python - the correct encoding exceptions are `TypeError` and `ValueError`.
+
 ## [0.2.0] - 2025-01-12
 
 ### 🚀 Major Feature Release - Comprehensive Cloud SIEM API Coverage

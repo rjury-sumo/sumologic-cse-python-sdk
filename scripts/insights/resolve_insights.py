@@ -85,7 +85,9 @@ try:
     logger.info(f"Successfully connected to endpoint: {args.endpoint}")
 except AuthenticationError as e:
     logger.error(f"Authentication failed: {e}")
-    logger.error("Please check your SUMO_ACCESS_ID and SUMO_ACCESS_KEY environment variables")
+    logger.error(
+        "Please check your SUMO_ACCESS_ID and SUMO_ACCESS_KEY environment variables"
+    )
     exit(1)
 except ConfigurationError as e:
     logger.error(f"Configuration error: {e}")
@@ -96,6 +98,7 @@ except Exception as e:
 
 # get relative datetime
 from datetime import timezone
+
 timenow = datetime.now()
 timenowtuc = datetime.now(timezone.utc)
 timethen = timenowtuc - timedelta(days=args.daysold)
@@ -109,7 +112,11 @@ else:
 #     comment=f"Closed by API from host: {os.uname().nodename} at {datetime.now()}"
 # else:
 comment = args.comment
-mode = "DRY-RUN MODE (no changes will be made)" if args.dryrun else "EXECUTION MODE (changes will be made)"
+mode = (
+    "DRY-RUN MODE (no changes will be made)"
+    if args.dryrun
+    else "EXECUTION MODE (changes will be made)"
+)
 logger.info(f"Starting query: {q}")
 logger.info(f"Running in: {mode}")
 insights = cse.query_insights(q=q, limit=args.limit)
@@ -142,10 +149,14 @@ if len(insights) > 0:
                 logger.info(json.dumps(row))
 
                 if args.dryrun:
-                    logger.info(f"[DRY-RUN] Would close: {i['readableId']} with resolution: {args.resolution}")
+                    logger.info(
+                        f"[DRY-RUN] Would close: {i['readableId']} with resolution: {args.resolution}"
+                    )
                     logger.info(f"[DRY-RUN] Would add comment: {comment}")
                 else:
-                    logger.info(f"Closing: {i['readableId']} with resolution: {args.resolution}")
+                    logger.info(
+                        f"Closing: {i['readableId']} with resolution: {args.resolution}"
+                    )
                     c = cse.add_insight_comment(i["id"], comment)
                     r = cse.update_insight_resolution_status(
                         i["id"], args.resolution, args.status

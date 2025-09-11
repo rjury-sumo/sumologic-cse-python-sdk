@@ -1,25 +1,102 @@
 [project]
 name = "sumologiccse"
-version = "0.0.6"
+version = "0.1.0"
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
-keywords = ["sumologic", "cse", "api", "sdk", "python", "Cloud SIEM","sumo"]
+keywords = ["sumologic", "cse", "api", "sdk", "python", "cloud-siem", "sumo", "security"]
 authors = [
   { name="Rick Jury", email="rjury@sumologic.com" },
 ]
-description = "An API client for common use cases for the Sumologic Cloud SIEM API https://api.sumologic.com/docs/sec/#"
+description = "Python SDK for Sumo Logic Cloud SIEM API"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.32.0",
+]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Operating System :: OS Independent",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/rjury-sumo/sumologic-cse-python-sdk"
+"Repository" = "https://github.com/rjury-sumo/sumologic-cse-python-sdk"
 "Bug Tracker" = "https://github.com/rjury-sumo/sumologic-cse-python-sdk/issues"
+"Documentation" = "https://github.com/rjury-sumo/sumologic-cse-python-sdk#readme"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.0.0",
+    "black>=25.1.0",
+    "ruff>=0.8.0",
+    "mypy>=1.17.0",
+    "twine>=6.0.0",
+    "build>=1.0.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.0.0",
+    "black>=25.1.0", 
+    "ruff>=0.8.0",
+    "mypy>=1.17.0",
+    "twine>=6.0.0",
+    "build>=1.0.0",
+]
 
 [build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sumologiccse"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+exclude = ["scripts/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "ARG"]
+ignore = [
+    "N803",  # Argument name should be lowercase (keep existing API)
+    "B008",  # Do not perform function calls in argument defaults (existing pattern)
+    "ARG002", # Unused method argument (keep for API compatibility)
+    "E501",  # Line too long (some error messages need to be descriptive)
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--verbose --cov=sumologiccse --cov-report=term-missing"
+markers = [
+    "integration: marks tests as integration tests (may require credentials)",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true

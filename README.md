@@ -1,69 +1,162 @@
 # sumologic-cse-python-sdk
-An api client similar to the official Sumologic python API client but for the CSE api: https://api.sumologic.com/docs/sec/#
 
-This project only intends to cover off and provide useful scripts to solve some common use cases rather than create an entire comprehensive API client.
+A Python SDK for the Sumo Logic Cloud SIEM (CSE) API. This client provides useful functionality for common Cloud SIEM use cases rather than being a comprehensive API client.
 
+**API Documentation**: https://api.sumologic.com/docs/sec/#
 
-# install package
-```
+## Requirements
+
+- Python 3.9 or higher
+- Sumo Logic Cloud SIEM access credentials
+
+## Installation
+
+### Using pip
+```bash
 pip install sumologiccse
 ```
 
-# Getting Started
-see the scripts section for examples. In general either set env vars:
-- SUMO_ACCESS_ID
-- SUMO_ACCESS_KEY
-or you must privide as arguments.
+### Using uv (recommended for development)
+```bash
+uv add sumologiccse
+```
 
-## endpoints 
+## Getting Started
+
+See the scripts section for examples. Configure your credentials using either:
+
+**Environment Variables:**
+```bash
+export SUMO_ACCESS_ID="your_access_id"
+export SUMO_ACCESS_KEY="your_access_key"
+```
+
+**Or provide as arguments when creating the client.**
+
+## Endpoints
+
 See: https://help.sumologic.com/docs/api/getting-started/#which-endpoint-should-i-should-use
 
-The defeault endpoint is: https://api.sumologic.com/docs/sec
-Using --endpoint 'prod' or 'us1' will also resolve to this value.
+The default endpoint is: https://api.sumologic.com/docs/sec  
+Using `--endpoint 'prod'` or `'us1'` will also resolve to this value.
 
-For endpoints other than prod/us1 use the endpoint short form name such as:
-```
+For other endpoints, use the short form name:
+```bash
 --endpoint 'us2'
---endpoint 'au'
+--endpoint 'au' 
 --endpoint 'in'
 ```
 
-## connection
-To create connection:
-```
+## Usage
+
+### Create a Connection
+```python
 from sumologiccse.sumologiccse import SumoLogicCSE
-cse=SumoLogicCSE(endpoint='us2')
+
+# Using environment variables
+cse = SumoLogicCSE(endpoint='us2')
+
+# Or with explicit credentials
+cse = SumoLogicCSE(
+    endpoint='us2',
+    access_id='your_access_id',
+    access_key='your_access_key'
+)
 ```
 
-Then use any method such as:
-```
+### Query Insights
+```python
 q = '-status:"closed" created:>2022-11-17T00:00:00+00:00'
 insights = cse.get_insights(q=q)
 ```
 
-There are a lot of API endpoints you can also call them directly for example:
-```
+### Direct API Calls
+You can call any API endpoint directly:
+```python
 statuses = cse.get('/insight-status')
 ```
 
-# Example Use Case Scripts
-You can find these in ./scripts for example:
+## Development Setup
+
+### Using uv (recommended)
+```bash
+# Clone the repository
+git clone https://github.com/rjury-sumo/sumologic-cse-python-sdk.git
+cd sumologic-cse-python-sdk
+
+# Install with development dependencies
+uv sync --dev
+
+# Run tests
+uv run pytest
+
+# Format code
+uv run black .
+
+# Lint code  
+uv run ruff check .
+
+# Type checking
+uv run mypy src/
+```
+
+### Using traditional pip
+```bash
+pip install -e ".[dev]"
+pytest
+black .
+ruff check .
+mypy src/
+```
+
+### Publishing (for maintainers)
+```bash
+# Build the package
+uv run python -m build
+
+# Upload to PyPI (requires credentials)
+uv run twine upload dist/*
+
+# Upload to Test PyPI first (recommended)
+uv run twine upload --repository testpypi dist/*
+```
+
+## Example Use Case Scripts
+
+Find example scripts in `./scripts/`:
 - [Insights scripts readme](scripts/insights/readme.md)
 
 
-# Docker
+## Docker
 
-Build the dockerfile, you can then run build version of module for testing or build with package included by uncommenting the pypi package install
-
-```
+Build the Docker image:
+```bash
 docker build -t sumocse-test .
 ```
 
-Run and set relevant env vars e.g 
-```
-docker run -it -e SUMO_ACCESS_ID="$SUMO_ACCESS_ID_DEMO" -e SUMO_ACCESS_KEY="$SUMO_ACCESS_KEY_DEMO" -e SUMO_ACCESS_ID_DEMO="$SUMO_ACCESS_ID_DEMO" -e SUMO_ACCESS_KEY_DEMO="$SUMO_ACCESS_KEY_DEMO" sumocse-test bash
+Run with environment variables:
+```bash
+docker run -it \
+  -e SUMO_ACCESS_ID="$SUMO_ACCESS_ID" \
+  -e SUMO_ACCESS_KEY="$SUMO_ACCESS_KEY" \
+  sumocse-test bash
 ```
 
-# TODOs
-- Add a decent selection of endpoints
-- Write some more unit and integration tests
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Run the test suite: `uv run pytest`
+5. Format code: `uv run black .`
+6. Lint code: `uv run ruff check .`
+7. Submit a pull request
+
+## TODOs
+
+- Add comprehensive endpoint coverage
+- Expand unit and integration test suite
+- Add async support
+- Improve error handling and logging

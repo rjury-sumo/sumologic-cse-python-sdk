@@ -467,14 +467,6 @@ class SumoLogicCSE:
         response = self.get(f"/insights/{insight_id}")
         return json.loads(response.text)
 
-    def get_insight_statuses(self):
-        """
-        Retrieve all insight statuses.
-
-        :return: JSON response
-        """
-        response = self.get("/insight-status")
-        return json.loads(response.text)
 
     def update_insight_resolution_status(self, insight_id, resolution, status):
         """
@@ -558,3 +550,791 @@ class SumoLogicCSE:
             batchsize = min(20, remaining)
 
         return rules
+
+    # =================================================================
+    # Configuration Endpoints
+    # =================================================================
+
+    def get_insights_configuration(self):
+        """
+        Get global insights configuration.
+
+        :return: JSON response with insights configuration
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info("Fetching global insights configuration")
+        response = self.get("/insights-configuration")
+        return self._safe_json_parse(response, "get_insights_configuration")
+
+    def get_context_actions(self, limit: int = 100, token: str = None):
+        """
+        Get all context actions.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with context actions
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching context actions")
+        response = self.get("/context-actions", params)
+        return self._safe_json_parse(response, "get_context_actions")
+
+    def get_context_action(self, action_id: str):
+        """
+        Get a specific context action by ID.
+
+        :param action_id: The context action ID
+        :return: JSON response with context action details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching context action: {action_id}")
+        response = self.get(f"/context-actions/{action_id}")
+        return self._safe_json_parse(response, "get_context_action")
+
+    def get_insight_statuses(self):
+        """
+        Get all defined or custom insight statuses.
+
+        :return: JSON response with insight statuses
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info("Fetching insight statuses")
+        response = self.get("/insight-status")
+        return self._safe_json_parse(response, "get_insight_statuses")
+
+    def get_insight_status(self, status_id: str):
+        """
+        Get a specific insight status by ID.
+
+        :param status_id: The insight status ID
+        :return: JSON response with insight status details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching insight status: {status_id}")
+        response = self.get(f"/insight-status/{status_id}")
+        return self._safe_json_parse(response, "get_insight_status")
+
+    def get_insight_resolutions(self):
+        """
+        Get all defined or custom insight resolutions.
+
+        :return: JSON response with insight resolutions
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info("Fetching insight resolutions")
+        response = self.get("/insight-resolutions")
+        return self._safe_json_parse(response, "get_insight_resolutions")
+
+    def get_insight_resolution(self, resolution_id: str):
+        """
+        Get a specific insight resolution by ID.
+
+        :param resolution_id: The insight resolution ID
+        :return: JSON response with insight resolution details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching insight resolution: {resolution_id}")
+        response = self.get(f"/insight-resolutions/{resolution_id}")
+        return self._safe_json_parse(response, "get_insight_resolution")
+
+    # =================================================================
+    # Custom Entity and Insight Endpoints
+    # =================================================================
+
+    def get_custom_entity_types(self, limit: int = 100, token: str = None):
+        """
+        Get all custom entity types.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with custom entity types
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching custom entity types")
+        response = self.get("/custom-entity-types", params)
+        return self._safe_json_parse(response, "get_custom_entity_types")
+
+    def get_custom_entity_type(self, entity_type_id: str):
+        """
+        Get a specific custom entity type by ID.
+
+        :param entity_type_id: The custom entity type ID
+        :return: JSON response with custom entity type details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching custom entity type: {entity_type_id}")
+        response = self.get(f"/custom-entity-types/{entity_type_id}")
+        return self._safe_json_parse(response, "get_custom_entity_type")
+
+    def get_custom_insights(self, limit: int = 100, token: str = None):
+        """
+        Get all custom insights.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with custom insights
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching custom insights")
+        response = self.get("/custom-insights", params)
+        return self._safe_json_parse(response, "get_custom_insights")
+
+    def get_custom_insight(self, insight_id: str):
+        """
+        Get a specific custom insight by ID.
+
+        :param insight_id: The custom insight ID
+        :return: JSON response with custom insight details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching custom insight: {insight_id}")
+        response = self.get(f"/custom-insights/{insight_id}")
+        return self._safe_json_parse(response, "get_custom_insight")
+
+    # =================================================================
+    # Match Lists and Columns Endpoints
+    # =================================================================
+
+    def get_match_lists(self, limit: int = 100, token: str = None):
+        """
+        Get all match lists.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with match lists
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching match lists")
+        response = self.get("/match-lists", params)
+        return self._safe_json_parse(response, "get_match_lists")
+
+    def get_match_list(self, list_id: str):
+        """
+        Get a specific match list by ID.
+
+        :param list_id: The match list ID
+        :return: JSON response with match list details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching match list: {list_id}")
+        response = self.get(f"/match-lists/{list_id}")
+        return self._safe_json_parse(response, "get_match_list")
+
+    def get_match_list_items(self, list_id: str, limit: int = 100, token: str = None):
+        """
+        Get items from a specific match list.
+
+        :param list_id: The match list ID
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with match list items
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info(f"Fetching match list items for list: {list_id}")
+        response = self.get(f"/match-lists/{list_id}/items", params)
+        return self._safe_json_parse(response, "get_match_list_items")
+
+    def get_match_list_item(self, list_id: str, item_id: str):
+        """
+        Get a specific item from a match list.
+
+        :param list_id: The match list ID
+        :param item_id: The match list item ID
+        :return: JSON response with match list item details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching match list item: {item_id} from list: {list_id}")
+        response = self.get(f"/match-lists/{list_id}/items/{item_id}")
+        return self._safe_json_parse(response, "get_match_list_item")
+
+    def get_custom_match_list_columns(self, limit: int = 100, token: str = None):
+        """
+        Get all custom match list columns.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with custom match list columns
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching custom match list columns")
+        response = self.get("/custom-match-list-columns", params)
+        return self._safe_json_parse(response, "get_custom_match_list_columns")
+
+    def get_custom_match_list_column(self, column_id: str):
+        """
+        Get a specific custom match list column by ID.
+
+        :param column_id: The custom match list column ID
+        :return: JSON response with custom match list column details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching custom match list column: {column_id}")
+        response = self.get(f"/custom-match-list-columns/{column_id}")
+        return self._safe_json_parse(response, "get_custom_match_list_column")
+
+    # =================================================================
+    # Entity Management Endpoints
+    # =================================================================
+
+    def get_entities(self, q: str = None, limit: int = 100, offset: int = 0):
+        """
+        Get entities with optional query filtering.
+
+        :param q: Query parameter for filtering entities
+        :param limit: Maximum number of results to return
+        :param offset: Offset for pagination
+        :return: JSON response with entities
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit, "offset": offset}
+        if q:
+            params["q"] = q
+
+        logger.info(f"Fetching entities with query: {q}")
+        response = self.get("/entities", params)
+        return self._safe_json_parse(response, "get_entities")
+
+    def get_entity(self, entity_id: str):
+        """
+        Get a specific entity by ID.
+
+        :param entity_id: The entity ID
+        :return: JSON response with entity details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching entity: {entity_id}")
+        response = self.get(f"/entities/{entity_id}")
+        return self._safe_json_parse(response, "get_entity")
+
+    def get_related_entities_by_id(self, entity_id: str):
+        """
+        Get entities related to a specific entity ID.
+
+        :param entity_id: The entity ID
+        :return: JSON response with related entities
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching related entities for: {entity_id}")
+        response = self.get(f"/entities/{entity_id}/related")
+        return self._safe_json_parse(response, "get_related_entities_by_id")
+
+    def get_entity_groups(self, limit: int = 100, token: str = None):
+        """
+        Get all entity group configurations.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with entity groups
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching entity groups")
+        response = self.get("/entity-groups", params)
+        return self._safe_json_parse(response, "get_entity_groups")
+
+    def get_entity_group(self, group_id: str):
+        """
+        Get a specific entity group by ID.
+
+        :param group_id: The entity group ID
+        :return: JSON response with entity group details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching entity group: {group_id}")
+        response = self.get(f"/entity-groups/{group_id}")
+        return self._safe_json_parse(response, "get_entity_group")
+
+    def get_entity_criticality_configs(self, limit: int = 100, token: str = None):
+        """
+        Get all custom entity criticality configurations.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with entity criticality configs
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching entity criticality configurations")
+        response = self.get("/entity-criticality-configs", params)
+        return self._safe_json_parse(response, "get_entity_criticality_configs")
+
+    def get_entity_criticality_config(self, config_id: str):
+        """
+        Get a specific entity criticality configuration by ID.
+
+        :param config_id: The entity criticality configuration ID
+        :return: JSON response with entity criticality config details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching entity criticality config: {config_id}")
+        response = self.get(f"/entity-criticality-configs/{config_id}")
+        return self._safe_json_parse(response, "get_entity_criticality_config")
+
+    # =================================================================
+    # Lookup Tables Endpoints
+    # =================================================================
+
+    def get_customer_sourced_lookup_tables(self, limit: int = 100, token: str = None):
+        """
+        Get all customer-created lookup tables.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with customer lookup tables
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching customer sourced lookup tables")
+        response = self.get("/customer-sourced-lookup-tables", params)
+        return self._safe_json_parse(response, "get_customer_sourced_lookup_tables")
+
+    def get_customer_sourced_lookup_table(self, table_id: str):
+        """
+        Get a specific customer-created lookup table by ID.
+
+        :param table_id: The lookup table ID
+        :return: JSON response with lookup table details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching customer sourced lookup table: {table_id}")
+        response = self.get(f"/customer-sourced-lookup-tables/{table_id}")
+        return self._safe_json_parse(response, "get_customer_sourced_lookup_table")
+
+    # =================================================================
+    # Log Mappings and Reporting Endpoints
+    # =================================================================
+
+    def get_log_mappings(self, limit: int = 100, token: str = None):
+        """
+        Get all defined log mappings.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with log mappings
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching log mappings")
+        response = self.get("/log-mappings", params)
+        return self._safe_json_parse(response, "get_log_mappings")
+
+    def get_log_mapping(self, mapping_id: str):
+        """
+        Get a specific log mapping by ID.
+
+        :param mapping_id: The log mapping ID
+        :return: JSON response with log mapping details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching log mapping: {mapping_id}")
+        response = self.get(f"/log-mappings/{mapping_id}")
+        return self._safe_json_parse(response, "get_log_mapping")
+
+    def get_log_mapping_vendors_and_products(self):
+        """
+        Get all available log mapping vendors and products.
+
+        :return: JSON response with vendors and products
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info("Fetching log mapping vendors and products")
+        response = self.get("/log-mappings/vendors-and-products")
+        return self._safe_json_parse(response, "get_log_mapping_vendors_and_products")
+
+    def get_insight_counts(self, start_time: str, end_time: str, timezone: str = "UTC"):
+        """
+        Get insight counts for reporting volumes.
+
+        :param start_time: Start time in ISO format
+        :param end_time: End time in ISO format
+        :param timezone: Timezone (default: UTC)
+        :return: JSON response with insight counts
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {
+            "startTime": start_time,
+            "endTime": end_time,
+            "timezone": timezone
+        }
+
+        logger.info(f"Fetching insight counts from {start_time} to {end_time}")
+        response = self.get("/insight-counts", params)
+        return self._safe_json_parse(response, "get_insight_counts")
+
+    def get_signal_counts(self, start_time: str, end_time: str, timezone: str = "UTC"):
+        """
+        Get signal counts for reporting volumes.
+
+        :param start_time: Start time in ISO format
+        :param end_time: End time in ISO format
+        :param timezone: Timezone (default: UTC)
+        :return: JSON response with signal counts
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {
+            "startTime": start_time,
+            "endTime": end_time,
+            "timezone": timezone
+        }
+
+        logger.info(f"Fetching signal counts from {start_time} to {end_time}")
+        response = self.get("/signal-counts", params)
+        return self._safe_json_parse(response, "get_signal_counts")
+
+    def get_record_counts(self, start_time: str, end_time: str, timezone: str = "UTC"):
+        """
+        Get record counts for reporting volumes.
+
+        :param start_time: Start time in ISO format
+        :param end_time: End time in ISO format
+        :param timezone: Timezone (default: UTC)
+        :return: JSON response with record counts
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {
+            "startTime": start_time,
+            "endTime": end_time,
+            "timezone": timezone
+        }
+
+        logger.info(f"Fetching record counts from {start_time} to {end_time}")
+        response = self.get("/record-counts", params)
+        return self._safe_json_parse(response, "get_record_counts")
+
+    # =================================================================
+    # Network Blocks Endpoints
+    # =================================================================
+
+    def get_network_blocks(self, limit: int = 100, token: str = None):
+        """
+        Get all network blocks.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with network blocks
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching network blocks")
+        response = self.get("/network-blocks", params)
+        return self._safe_json_parse(response, "get_network_blocks")
+
+    def get_network_block(self, block_id: str):
+        """
+        Get a specific network block by ID.
+
+        :param block_id: The network block ID
+        :return: JSON response with network block details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching network block: {block_id}")
+        response = self.get(f"/network-blocks/{block_id}")
+        return self._safe_json_parse(response, "get_network_block")
+
+    # =================================================================
+    # MITRE ATT&CK Endpoints
+    # =================================================================
+
+    def get_mitre_tactics(self, limit: int = 100, token: str = None):
+        """
+        Get all MITRE ATT&CK tactics.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with MITRE tactics
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching MITRE ATT&CK tactics")
+        response = self.get("/mitre-tactics", params)
+        return self._safe_json_parse(response, "get_mitre_tactics")
+
+    def get_mitre_techniques(self, limit: int = 100, token: str = None):
+        """
+        Get all MITRE ATT&CK techniques.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with MITRE techniques
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching MITRE ATT&CK techniques")
+        response = self.get("/mitre-techniques", params)
+        return self._safe_json_parse(response, "get_mitre_techniques")
+
+    # =================================================================
+    # Signals Endpoints
+    # =================================================================
+
+    def get_signals(self, q: str = None, limit: int = 100, offset: int = 0):
+        """
+        Query signals using Cloud SIEM DSL.
+
+        :param q: Query string in CSE DSL format (optional)
+        :param limit: Maximum number of results to return
+        :param offset: Starting offset for pagination
+        :return: JSON response with signals
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit, "offset": offset}
+        if q:
+            params["q"] = q
+
+        logger.info(f"Querying signals with query: {q}")
+        response = self.get("/signals", params)
+        return self._safe_json_parse(response, "get_signals")
+
+    def get_signal(self, signal_id: str):
+        """
+        Get a specific signal by ID.
+
+        :param signal_id: The signal ID
+        :return: JSON response with signal details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching signal: {signal_id}")
+        response = self.get(f"/signals/{signal_id}")
+        return self._safe_json_parse(response, "get_signal")
+
+    # =================================================================
+    # Suppressed Lists Endpoints
+    # =================================================================
+
+    def get_suppressed_lists(self, limit: int = 100, token: str = None):
+        """
+        Get all suppressed lists.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with suppressed lists
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching suppressed lists")
+        response = self.get("/suppressed-lists", params)
+        return self._safe_json_parse(response, "get_suppressed_lists")
+
+    def get_suppressed_list(self, list_id: str):
+        """
+        Get a specific suppressed list by ID.
+
+        :param list_id: The suppressed list ID
+        :return: JSON response with suppressed list details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching suppressed list: {list_id}")
+        response = self.get(f"/suppressed-lists/{list_id}")
+        return self._safe_json_parse(response, "get_suppressed_list")
+
+    # =================================================================
+    # Threat Intelligence Endpoints
+    # =================================================================
+
+    def get_threat_intel_sources(self, limit: int = 100, token: str = None):
+        """
+        Get all threat intelligence sources.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with threat intel sources
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching threat intelligence sources")
+        response = self.get("/threat-intel-sources", params)
+        return self._safe_json_parse(response, "get_threat_intel_sources")
+
+    def get_threat_intel_source(self, source_id: str):
+        """
+        Get a specific threat intelligence source by ID.
+
+        :param source_id: The threat intel source ID
+        :return: JSON response with threat intel source details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching threat intelligence source: {source_id}")
+        response = self.get(f"/threat-intel-sources/{source_id}")
+        return self._safe_json_parse(response, "get_threat_intel_source")
+
+    def get_threat_intel_indicators(self, source_id: str, limit: int = 100, token: str = None):
+        """
+        Get threat intelligence indicators for a specific source.
+
+        :param source_id: The threat intel source ID
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with threat intel indicators
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info(f"Fetching threat intel indicators for source: {source_id}")
+        response = self.get(f"/threat-intel-sources/{source_id}/indicators", params)
+        return self._safe_json_parse(response, "get_threat_intel_indicators")
+
+    # =================================================================
+    # Tag Schemas Endpoints
+    # =================================================================
+
+    def get_tag_schemas(self, limit: int = 100, token: str = None):
+        """
+        Get all tag schemas.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with tag schemas
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching tag schemas")
+        response = self.get("/tag-schemas", params)
+        return self._safe_json_parse(response, "get_tag_schemas")
+
+    def get_tag_schema(self, schema_id: str):
+        """
+        Get a specific tag schema by ID.
+
+        :param schema_id: The tag schema ID
+        :return: JSON response with tag schema details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching tag schema: {schema_id}")
+        response = self.get(f"/tag-schemas/{schema_id}")
+        return self._safe_json_parse(response, "get_tag_schema")
+
+    # =================================================================
+    # Rule Tuning Expressions Endpoints
+    # =================================================================
+
+    def get_rule_tuning_expressions(self, limit: int = 100, token: str = None):
+        """
+        Get all rule tuning expressions.
+
+        :param limit: Maximum number of results to return
+        :param token: Continuation token for pagination
+        :return: JSON response with rule tuning expressions
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        params = {"limit": limit}
+        if token:
+            params["token"] = token
+
+        logger.info("Fetching rule tuning expressions")
+        response = self.get("/rule-tuning-expressions", params)
+        return self._safe_json_parse(response, "get_rule_tuning_expressions")
+
+    def get_rule_tuning_expression(self, expression_id: str):
+        """
+        Get a specific rule tuning expression by ID.
+
+        :param expression_id: The rule tuning expression ID
+        :return: JSON response with rule tuning expression details
+        :raises APIError: If the API request fails
+        :raises DataError: If response parsing fails
+        """
+        logger.info(f"Fetching rule tuning expression: {expression_id}")
+        response = self.get(f"/rule-tuning-expressions/{expression_id}")
+        return self._safe_json_parse(response, "get_rule_tuning_expression")

@@ -79,3 +79,57 @@ class TestRulesIntegration:
         # All returned rules should match the query criteria
         for rule in response["data"]["objects"]:
             assert "enabled" in rule
+
+
+class TestNewEndpoints:
+    """Test cases for new v0.2.0 endpoints"""
+
+    def test_new_endpoint_methods_exist(self):
+        """Test that all new endpoint methods exist and are callable"""
+        cse = SumoLogicCSE(endpoint="us2", accessId="test_id", accessKey="test_key")
+        
+        # Configuration endpoints
+        assert hasattr(cse, 'get_insights_configuration')
+        assert callable(getattr(cse, 'get_insights_configuration'))
+        assert hasattr(cse, 'get_context_actions')
+        assert callable(getattr(cse, 'get_context_actions'))
+        
+        # Custom entity endpoints
+        assert hasattr(cse, 'get_custom_entity_types')
+        assert callable(getattr(cse, 'get_custom_entity_types'))
+        assert hasattr(cse, 'get_custom_insights')
+        assert callable(getattr(cse, 'get_custom_insights'))
+        
+        # Match lists endpoints
+        assert hasattr(cse, 'get_match_lists')
+        assert callable(getattr(cse, 'get_match_lists'))
+        assert hasattr(cse, 'get_match_list_items')
+        assert callable(getattr(cse, 'get_match_list_items'))
+        
+        # Entity management endpoints
+        assert hasattr(cse, 'get_entities')
+        assert callable(getattr(cse, 'get_entities'))
+        assert hasattr(cse, 'get_entity_groups')
+        assert callable(getattr(cse, 'get_entity_groups'))
+        
+        # Network and MITRE endpoints
+        assert hasattr(cse, 'get_network_blocks')
+        assert callable(getattr(cse, 'get_network_blocks'))
+        assert hasattr(cse, 'get_mitre_tactics')
+        assert callable(getattr(cse, 'get_mitre_tactics'))
+        assert hasattr(cse, 'get_mitre_techniques')
+        assert callable(getattr(cse, 'get_mitre_techniques'))
+        
+        # Signals and threat intel endpoints
+        assert hasattr(cse, 'get_signals')
+        assert callable(getattr(cse, 'get_signals'))
+        assert hasattr(cse, 'get_threat_intel_sources')
+        assert callable(getattr(cse, 'get_threat_intel_sources'))
+        
+        # Reporting endpoints
+        assert hasattr(cse, 'get_insight_counts')
+        assert callable(getattr(cse, 'get_insight_counts'))
+        assert hasattr(cse, 'get_signal_counts')
+        assert callable(getattr(cse, 'get_signal_counts'))
+        assert hasattr(cse, 'get_record_counts')
+        assert callable(getattr(cse, 'get_record_counts'))

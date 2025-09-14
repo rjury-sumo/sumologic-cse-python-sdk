@@ -106,17 +106,17 @@ def search_insights(insights, search_term):
     """Search for insights containing the search term."""
     if not search_term:
         return insights
-    
+
     search_term = search_term.lower()
     matching_insights = []
-    
+
     for insight in insights:
         name = insight.get('name', '').lower()
         description = insight.get('description', '').lower()
-        
+
         if search_term in name or search_term in description:
             matching_insights.append(insight)
-    
+
     return matching_insights
 
 def format_table_output(insights):
@@ -124,11 +124,11 @@ def format_table_output(insights):
     if not insights:
         print("No custom insights found.")
         return
-    
+
     # Print header
     print(f"{'ID':<20} {'Name':<35} {'Enabled':<8} {'Severity':<8} {'Created':<12}")
     print("-" * 85)
-    
+
     for insight in insights:
         # Safely extract fields with defaults
         insight_id = insight.get('id', 'N/A')[:20]
@@ -136,7 +136,7 @@ def format_table_output(insights):
         enabled = 'Yes' if insight.get('enabled', False) else 'No'
         severity = str(insight.get('severity', 'N/A'))[:8]
         created = format_date(insight.get('createdAt'))
-        
+
         print(f"{insight_id:<20} {name:<35} {enabled:<8} {severity:<8} {created:<12}")
 
 def format_details_output(insights):
@@ -144,21 +144,21 @@ def format_details_output(insights):
     if not insights:
         print("No custom insights found.")
         return
-    
+
     for i, insight in enumerate(insights):
         if i > 0:
             print("\n" + "="*80)
-        
-        print(f"Custom Insight Details")
+
+        print("Custom Insight Details")
         print("="*80)
         print(f"ID: {insight.get('id', 'N/A')}")
         print(f"Name: {insight.get('name', 'N/A')}")
         print(f"Enabled: {'Yes' if insight.get('enabled', False) else 'No'}")
         print(f"Severity: {insight.get('severity', 'N/A')}")
-        
+
         if insight.get('description'):
             print(f"Description: {insight['description']}")
-        
+
         # Signal rules and conditions
         if insight.get('signalNames'):
             signal_names = insight['signalNames']
@@ -166,13 +166,13 @@ def format_details_output(insights):
                 print(f"Signal Names: {', '.join(signal_names)}")
             else:
                 print(f"Signal Names: {signal_names}")
-        
+
         # Ordered field information
         if insight.get('orderedFields'):
             print("Ordered Fields:")
             for field in insight['orderedFields']:
                 print(f"  - {field}")
-        
+
         # Resolution information
         if insight.get('resolution'):
             resolution = insight['resolution']
@@ -181,7 +181,7 @@ def format_details_output(insights):
                 print(f"Default Resolution: {res_name}")
             else:
                 print(f"Default Resolution: {resolution}")
-        
+
         # Status information
         if insight.get('status'):
             status = insight['status']
@@ -190,7 +190,7 @@ def format_details_output(insights):
                 print(f"Default Status: {status_name}")
             else:
                 print(f"Default Status: {status}")
-        
+
         # Tags
         if insight.get('tags'):
             tags = insight['tags']
@@ -198,7 +198,7 @@ def format_details_output(insights):
                 print(f"Tags: {', '.join(tags)}")
             else:
                 print(f"Tags: {tags}")
-        
+
         # Audit information
         print(f"Created: {format_date(insight.get('createdAt'))}")
         print(f"Modified: {format_date(insight.get('modifiedAt'))}")
@@ -214,21 +214,21 @@ def main():
             # Get specific insight by ID
             logger.info(f"Retrieving custom insight: {args.insight_id}")
             insight_data = cse.get_custom_insight(args.insight_id)
-            
+
             # Handle response format
             if isinstance(insight_data, dict) and 'data' in insight_data:
                 insight = insight_data['data']
             else:
                 insight = insight_data
-            
+
             format_details_output([insight])
-            
+
         else:
             # Get all custom insights
             logger.info(f"Retrieving custom insights (limit: {args.limit})")
-            
+
             insights_data = cse.get_custom_insights(limit=args.limit)
-            
+
             # Extract insights from response
             if isinstance(insights_data, dict) and 'data' in insights_data:
                 if 'objects' in insights_data['data']:
@@ -237,19 +237,19 @@ def main():
                     insights = insights_data['data']
             else:
                 insights = insights_data if isinstance(insights_data, list) else []
-            
+
             logger.info(f"Retrieved {len(insights)} custom insights")
-            
+
             # Apply search filter if provided
             if args.search_term:
                 insights = search_insights(insights, args.search_term)
                 logger.info(f"Found {len(insights)} insights matching '{args.search_term}'")
-            
+
             # Apply filtering if requested
             if args.filter_enabled:
                 insights = [insight for insight in insights if insight.get('enabled', False)]
                 logger.info(f"Filtered to {len(insights)} enabled insights")
-            
+
             # Output results based on format
             if args.output_format == "json":
                 print(json.dumps(insights, indent=2))
@@ -257,22 +257,22 @@ def main():
                 format_details_output(insights)
             else:  # table format
                 format_table_output(insights)
-            
+
             # Show summary if we have insights
             if insights and args.output_format != "json":
                 total_enabled = sum(1 for i in insights if i.get('enabled', False))
-                
+
                 # Severity breakdown
                 severity_counts = {}
                 for insight in insights:
                     severity = insight.get('severity', 'Unknown')
                     severity_counts[severity] = severity_counts.get(severity, 0) + 1
-                
+
                 print(f"\nSummary: {len(insights)} custom insights ({total_enabled} enabled)")
                 if severity_counts:
                     severity_info = [f"{sev}: {count}" for sev, count in severity_counts.items()]
                     print(f"Severity breakdown: {', '.join(severity_info)}")
-        
+
     except AuthenticationError as e:
         logger.error(f"Authentication failed: {e}")
         logger.error("Please verify your credentials and endpoint")

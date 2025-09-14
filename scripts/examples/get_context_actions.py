@@ -102,11 +102,11 @@ def format_table_output(actions):
     if not actions:
         print("No context actions found.")
         return
-    
+
     # Print header
     print(f"{'ID':<20} {'Name':<30} {'Type':<15} {'Enabled':<8} {'Created':<12}")
     print("-" * 87)
-    
+
     for action in actions:
         # Safely extract fields with defaults
         action_id = action.get('id', 'N/A')[:20]
@@ -114,7 +114,7 @@ def format_table_output(actions):
         action_type = action.get('type', 'N/A')[:15]
         enabled = 'Yes' if action.get('enabled', False) else 'No'
         created = format_date(action.get('createdAt'))
-        
+
         print(f"{action_id:<20} {name:<30} {action_type:<15} {enabled:<8} {created:<12}")
 
 def format_details_output(actions):
@@ -122,21 +122,21 @@ def format_details_output(actions):
     if not actions:
         print("No context actions found.")
         return
-    
+
     for i, action in enumerate(actions):
         if i > 0:
             print("\n" + "="*80)
-        
-        print(f"Context Action Details")
+
+        print("Context Action Details")
         print("="*80)
         print(f"ID: {action.get('id', 'N/A')}")
         print(f"Name: {action.get('name', 'N/A')}")
         print(f"Type: {action.get('type', 'N/A')}")
         print(f"Enabled: {'Yes' if action.get('enabled', False) else 'No'}")
-        
+
         if action.get('description'):
             print(f"Description: {action['description']}")
-        
+
         # URL and template information
         if action.get('template'):
             template = action['template']
@@ -144,7 +144,7 @@ def format_details_output(actions):
                 print(f"URL Template: {template['url']}")
             if template.get('method'):
                 print(f"HTTP Method: {template['method']}")
-        
+
         # Parameters
         if action.get('parameters'):
             print("Parameters:")
@@ -153,7 +153,7 @@ def format_details_output(actions):
                 param_type = param.get('type', 'N/A')
                 required = 'Required' if param.get('required', False) else 'Optional'
                 print(f"  - {param_name} ({param_type}) - {required}")
-        
+
         # Audit information
         print(f"Created: {format_date(action.get('createdAt'))}")
         print(f"Modified: {format_date(action.get('modifiedAt'))}")
@@ -169,21 +169,21 @@ def main():
             # Get specific action by ID
             logger.info(f"Retrieving context action: {args.action_id}")
             action_data = cse.get_context_action(args.action_id)
-            
+
             # Handle response format
             if isinstance(action_data, dict) and 'data' in action_data:
                 action = action_data['data']
             else:
                 action = action_data
-            
+
             format_details_output([action])
-            
+
         else:
             # Get all context actions
             logger.info(f"Retrieving context actions (limit: {args.limit})")
-            
+
             actions_data = cse.get_context_actions(limit=args.limit)
-            
+
             # Extract actions from response
             if isinstance(actions_data, dict) and 'data' in actions_data:
                 if 'objects' in actions_data['data']:
@@ -192,14 +192,14 @@ def main():
                     actions = actions_data['data']
             else:
                 actions = actions_data if isinstance(actions_data, list) else []
-            
+
             logger.info(f"Retrieved {len(actions)} context actions")
-            
+
             # Apply filtering if requested
             if args.filter_enabled:
                 actions = [action for action in actions if action.get('enabled', False)]
                 logger.info(f"Filtered to {len(actions)} enabled actions")
-            
+
             # Output results based on format
             if args.output_format == "json":
                 print(json.dumps(actions, indent=2))
@@ -207,12 +207,12 @@ def main():
                 format_details_output(actions)
             else:  # table format
                 format_table_output(actions)
-            
+
             # Show summary if we have actions
             if actions and args.output_format != "json":
                 total_enabled = sum(1 for a in actions if a.get('enabled', False))
                 print(f"\nSummary: {len(actions)} context actions ({total_enabled} enabled)")
-        
+
     except AuthenticationError as e:
         logger.error(f"Authentication failed: {e}")
         logger.error("Please verify your credentials and endpoint")

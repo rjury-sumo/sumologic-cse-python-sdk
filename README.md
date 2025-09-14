@@ -123,9 +123,41 @@ uv run twine upload --repository testpypi dist/*
 
 ## Example Use Case Scripts
 
-Find example scripts in `./scripts/`:
-- [Insights scripts readme](scripts/insights/readme.md)
+Comprehensive example scripts are available in `./scripts/examples/` demonstrating various Cloud SIEM API operations:
 
+### Core API Operations
+
+- **Insights**: Query and retrieve security insights
+- **Rules**: Get detection rules with filtering
+- **Rule Tuning**: Manage rule tuning expressions  
+- **Entity Management**: Work with entity groups and criticality configs
+- **Configuration**: Manage log mappings, tag schemas, and context actions
+
+### Quick Examples
+
+**Query user-created detection rules:**
+
+```bash
+./scripts/examples/get_rules.py --query='ruleSource:"user"' --limit 100
+```
+
+**Get recent high-severity insights:**
+
+```bash
+./scripts/examples/query_insights.py --severity High --limit 50
+```
+
+**List all context actions:**
+
+```bash
+./scripts/examples/get_context_actions.py --output-format details
+```
+
+### Documentation
+
+- [Examples directory README](scripts/examples/README.md) - Comprehensive guide to all example scripts
+- [Insights scripts readme](scripts/insights/readme.md) - Legacy insights scripts
+- [Rules scripts readme](scripts/rules/readme.md) - Legacy rules scripts
 
 ## Docker
 
